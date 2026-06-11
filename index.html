@@ -12,7 +12,7 @@
             margin: 0;
             padding: 20px;
         }
-        h1 { color: #333; font-size: 2.5em; margin-bottom: 10px; }
+        h1 { color: #333; font-size: 2.2em; margin-bottom: 15px; }
         .container {
             max-width: 800px;
             margin: auto;
@@ -20,7 +20,25 @@
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-height: 450px; /* ล็อกความสูงขั้นต่ำให้ดูสวยงาม */
         }
+        
+        /* ========================================== */
+        /* CSS สำหรับระบบสลับหน้าต่าง (Windows Setup) */
+        /* ========================================== */
+        .page-section {
+            display: none; /* ซ่อนทุกหน้าต่างเป็นค่าเริ่มต้น */
+            animation: fadeIn 0.3s ease-in-out; /* เพิ่มเอฟเฟกต์ตอนเปลี่ยนหน้า */
+        }
+        .page-section.active {
+            display: block; /* แสดงเฉพาะหน้าต่างที่มีคลาส active */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Elements อื่นๆ */
         #webcam-container {
             margin: 20px auto;
             border: 5px solid #ddd;
@@ -37,18 +55,47 @@
             background-color: #e0e0e0;
             color: #555;
         }
-        .btn-start {
+        .btn-start, .btn-save {
             background-color: #4CAF50;
             color: white;
             padding: 15px 40px;
-            font-size: 1.5em;
+            font-size: 1.3em;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-start:hover { background-color: #45a049; }
+        
+        /* ส่วนของ Settings Input */
+        .setting-group {
+            text-align: left;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .setting-group label { font-weight: bold; color: #34495e; }
+        .setting-group input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
 
+        /* ส่วนของ ประวัติแจ้งเตือน */
+        .history-log {
+            background: #fff5f5;
+            border-left: 5px solid #e74c3c;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: left;
+            color: #c0392b;
+        }
+
+        /* Navbar */
         .top-navbar {
             display: flex;
             justify-content: space-between;
@@ -59,17 +106,8 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin: -20px -20px 30px -20px;
         }
-
-        .nav-logo {
-            font-size: 1.4em;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
+        .nav-logo { font-size: 1.4em; font-weight: bold; }
+        .nav-links { display: flex; gap: 15px; }
         .nav-btn {
             background: transparent;
             border: none;
@@ -81,19 +119,12 @@
             border-radius: 8px;
             transition: all 0.2s;
         }
-
         .nav-btn:hover, .nav-btn.active {
             color: white;
             background-color: #34495e;
         }
-
-        .nav-btn.emergency {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .nav-btn.emergency:hover {
-            background-color: #c0392b;
-        }
+        .nav-btn.emergency { background-color: #e74c3c; color: white; }
+        .nav-btn.emergency:hover { background-color: #c0392b; }
     </style>
 </head>
 <body>
@@ -103,29 +134,51 @@
         <span>🤖</span> Zero-Touch AI Monitor
     </div>
     <div class="nav-links">
-        <button class="nav-btn active" onclick="showPage('live')">📺 หน้าจอสด (Live)</button>
-        <button class="nav-btn" onclick="showPage('history')">📜 ประวัติแจ้งเตือน</button>
-        <button class="nav-btn" onclick="showPage('settings')">⚙️ ตั้งค่าระบบ</button>
+        <button class="nav-btn active" onclick="showPage('live', this)">📺 หน้าจอสด (Live)</button>
+        <button class="nav-btn" onclick="showPage('history', this)">📜 ประวัติแจ้งเตือน</button>
+        <button class="nav-btn" onclick="showPage('settings', this)">⚙️ ตั้งค่าระบบ</button>
         <button class="nav-btn emergency" onclick="triggerManualPanic()">🚨 ฉุกเฉิน (Panic)</button>
     </div>
 </nav>
 
 <div class="container">
-    <h1>💙 ระบบผู้ช่วยความจำอัจฉริยะ</h1>
-    
-    <button type="button" class="btn-start" id="startBtn" onclick="init()">เริ่มเปิดระบบกล้อง AI</button>
-    
-    <div id="webcam-container"></div>
-    
-    <div id="status" class="status-box">กำลังรอสแกนใบหน้า...</div>
-    
-    <p>ระบบจะตรวจเช็กทุกๆ 15 นาที หากไม่พบผู้ป่วยจะแจ้งเตือนผ่าน LINE</p>
+
+    <div id="live-page" class="page-section active">
+        <h1>💙 ระบบผู้ช่วยความจำอัจฉริยะ (Live)</h1>
+        <button type="button" class="btn-start" id="startBtn" onclick="init()">เริ่มเปิดระบบกล้อง AI</button>
+        <br>
+        <div id="webcam-container"></div>
+        <div id="status" class="status-box">กำลังรอสแกนใบหน้า...</div>
+        <p>ระบบจะตรวจเช็กทุกๆ 15 นาที หากไม่พบผู้ป่วยจะแจ้งเตือนผ่าน LINE</p>
+    </div>
+
+    <div id="history-page" class="page-section">
+        <h1>📜 ประวัติการแจ้งเตือนย้อนหลัง</h1>
+        <p style="color: #7f8c8d;">บันทึกเหตุการณ์ฉุกเฉินและระบบตรวจจับล่าล่าสุด</p>
+        <div id="history-list">
+            <div class="history-log">🚨 11/06/2026 07:00 - ตรวจพบความผิดปกติ: ไม่พบผู้ป่วยในพื้นที่!</div>
+            <div class="history-log" style="border-left-color: #2ecc71; color: #27ae60; background: #f2f9f5;">✅ 11/06/2026 06:45 - ยืนยันตัวตนสำเร็จ: ผู้ป่วยทานยาเรียบร้อย</div>
+        </div>
+    </div>
+
+    <div id="settings-page" class="page-section">
+        <h1>⚙️ ตั้งค่าการเชื่อมต่อระบบ</h1>
+        <div class="setting-group">
+            <label>ลิงก์โมเดล AI (Teachable Machine URL)</label>
+            <input type="text" id="aiUrlInput" placeholder="https://teachablemachine.withgoogle.com/models/...">
+        </div>
+        <div class="setting-group">
+            <label>ลิงก์สำหรับส่งแจ้งเตือน LINE (Make Webhook URL)</label>
+            <input type="text" id="webhookInput" placeholder="https://hook.us1.make.com/...">
+        </div>
+        <button class="btn-save" style="background-color: #3498db;" onclick="alert('บันทึกตั้งค่าเรียบร้อย! (ฟังก์ชันจำลอง)')">💾 บันทึกการตั้งค่า</button>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script src="app.js"></script>
-
 </body>
 </html>
