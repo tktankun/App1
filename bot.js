@@ -9,8 +9,8 @@ app.use(express.json());
 // ==========================================
 // ตั้งค่า Discord Bot (เอาโค้ดลับมาจาก Discord Developer Portal)
 // ==========================================
-const DISCORD_BOT_TOKEN = "ใส่_TOKEN_ของบอทตรงนี้";
-const DISCORD_CHANNEL_ID = "ใส่_ID_ของช่องแชทที่ต้องการให้ข้อความเด้งตรงนี้";
+const DISCORD_BOT_TOKEN = "MTUxNDQ5NDkyMTE5MTU4Nzg2MA.GxFqEG.OofgbjFQAh9jsvKHfOUL2y4oD3udZ5lbBWell8";
+const DISCORD_CHANNEL_ID = "1514494386132619306";
 
 // สร้างตัวบอท
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
